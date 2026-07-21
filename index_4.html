@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="JoeJo's"/>
+<meta name="theme-color" content="#1a3a5c"/>
+<title>JoeJo's Painting Estimator</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;background:#f0f4f8;color:#1a1a2e;overscroll-behavior:none;}
+input,select,textarea{font-family:inherit;font-size:16px!important;}
+button{cursor:pointer;font-family:inherit;}
+:root{
+  --navy:#1a3a5c;--blue:#2563a8;--gold:#f59e0b;--green:#2e7d32;--pink:#880e4f;
+  --amber:#92400e;--purple:#7c3aed;--red:#dc2626;
+  --gray50:#f8fafc;--gray100:#f1f5f9;--gray200:#e2e8f0;
+  --gray400:#94a3b8;--gray500:#64748b;--gray700:#374151;
+}
+.card{background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.label{font-size:11px;font-weight:700;color:var(--gray500);margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em;display:block;}
+.input{width:100%;border:1.5px solid var(--gray200);border-radius:8px;padding:10px 12px;font-size:16px;outline:none;transition:border-color .15s;background:#fff;font-family:inherit;}
+.input:focus{border-color:var(--blue);}
+select.input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath fill='%2364748b' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
+textarea.input{resize:vertical;min-height:70px;}
+.btn{border:none;border-radius:10px;padding:12px 18px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:opacity .15s;}
+.btn:active{opacity:.8;}
+.btn-primary{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;}
+.btn-gold{background:var(--gold);color:#1a1a2e;}
+.btn-sm{padding:7px 12px;font-size:13px;border-radius:8px;}
+.btn-full{width:100%;display:block;text-align:center;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.check-label{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:500;color:var(--gray700);padding:6px 0;user-select:none;}
+.check-label input[type=checkbox]{width:20px;height:20px;accent-color:var(--blue);flex-shrink:0;}
+.accordion{background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;}
+.accordion-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;user-select:none;}
+.accordion-body{padding:16px;border-top:1px solid var(--gray100);}
+.total-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--gray100);font-size:13px;}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:8px;background:var(--gray50);border-radius:10px;padding:12px;border-left:4px solid var(--blue);}
+.rc-label{font-size:10px;font-weight:700;color:var(--gray500);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px;}
+.rc-value{font-weight:700;font-size:13px;color:var(--navy);}
+.rc-value.big{font-size:15px;}
+.info-banner{border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;}
+.empty{text-align:center;padding:36px 20px;color:var(--gray400);background:#fff;border-radius:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.wall-btn{padding:10px 4px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;border:2px solid var(--gray200);background:#fff;color:var(--gray500);text-align:center;transition:all .15s;}
+.wall-btn.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+.method-btn{flex:1;padding:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;font-family:inherit;}
+.dtype-btn{padding:9px 16px;border:none;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;transition:all .15s;}
+#app{display:flex;flex-direction:column;min-height:100vh;}
+#header{background:linear-gradient(135deg,var(--navy),var(--blue));padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px;}
+#content{flex:1;padding:14px 14px 80px;}
+#tabbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray200);display:flex;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06);padding-bottom:env(safe-area-inset-bottom);}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;color:var(--gray400);font-size:9px;font-weight:600;padding:8px 2px;cursor:pointer;}
+.tab-btn.active{color:var(--navy);}
+.tab-icon{font-size:20px;line-height:1;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+.share-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+@media(min-width:640px){#content{max-width:860px;margin:0 auto;padding:20px 20px 80px;}#header{padding:14px 24px;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:34px;height:34px;background:var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px">🎨</div>
+      <div>
+        <div id="hdr-title" style="color:#fff;font-weight:800;font-size:15px">JoeJo's Painting</div>
+        <div id="hdr-quote" style="color:var(--gold);font-weight:700;font-size:13px"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="save-msg" style="color:#86efac;font-size:12px;font-weight:600"></span>
+      <button class="btn btn-sm" id="btn-save" style="background:rgba(255,255,255,.15);color:#fff;display:none" onclick="App.save()">💾 Save</button>
+      <button class="btn btn-sm btn-gold" id="btn-preview" style="display:none" onclick="App.preview()">👁 Preview</button>
+    </div>
+  </div>
+  <div id="content"></div>
+  <div id="tabbar"></div>
+</div>
+<div id="modal-root"></div>
+<script>
+// ── SETTINGS ─────────────────────────────────────────────────────────────────
+const SK='jjo_settings';
+const EP='jjo_est_';
+let S=JSON.parse(localStorage.getItem(SK)||'null')||{
+  laborRate:45,matRate:0.35,baseboardRate:1.50,
+  doorDeduct:20,windowDeduct:15,
+  extLaborSqft:1.20,extMatSqft:0.55,extSecondColor:0.15,
+  halfDay:250,fullDay:475,
+  cabDoorBrush:55,cabDoorSpray:45,cabDrawerBrush:30,cabDrawerSpray:25,
+  cabBoxBrush:35,cabBoxSpray:28,cabPrep:18,cabSpraySetup:175,
+  contingency:10,econMult:0.85,premMult:1.25,
+};
+function saveS(){localStorage.setItem(SK,JSON.stringify(S));}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function fmt(n){return(+n||0).toLocaleString('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2});}
+
+// ── EMPTY OBJECTS ─────────────────────────────────────────────────────────────
+function emptyRoom(n){
+  return{id:uid(),name:n||'Room',length:'',width:'',ceiling:'8',
+    numWalls:'4',walls:true,ceilPaint:false,accentWall:false,accentW:'',accentH:'',
+    doors:'1',windows:'1',baseboardLF:'',cabinetDeduct:'',tubDeduct:'',coats:'2'};
+}
+function emptyExt(n){return{id:uid(),name:n||'Section',description:'',sqft:'',coats:'2',twoColor:false};}
+function emptyJob(){return{id:uid(),description:'',dayType:'Full Day (4–8 hrs)',customRate:'',days:'1',materials:'',matMarkup:'20',notes:''};}
+function emptyEst(){
+  return{
+    id:'est-'+uid(),createdAt:new Date().toLocaleDateString('en-US'),updatedAt:Date.now(),
+    customerName:'',jobAddress:'',customerEmail:'',customerPhone:'',
+    selectedTier:'Standard',
+    discount:'',discountLabel:'',discountType:'pct',
+    intDiscount:'',intDiscountLabel:'',intDiscountType:'pct',
+    extDiscount:'',extDiscountLabel:'',extDiscountType:'pct',
+    jobDiscount:'',jobDiscountLabel:'',jobDiscountType:'pct',
+    notes:'',extNotes:'',jobNotes:'',
+    paintBrand:'Benjamin Moore',estDuration:'',cashDiscount:'100',
+    intMaterials:'',extMaterials:'',jobMaterials:'',cabMaterials:'',
+    rooms:[emptyRoom('Room 1')],ext:[],jobs:[],
+    cab:{upperDoors:'',lowerDoors:'',drawerFronts:'',boxes:'',method:'brush',coats:'2',
+         includePrep:true,discount:'',discountLabel:'',discountType:'pct',notes:''},
+  };
+}
+
+// ── STORAGE ───────────────────────────────────────────────────────────────────
+function allEsts(){
+  return Object.keys(localStorage).filter(k=>k.startsWith(EP))
+    .map(k=>{try{return JSON.parse(localStorage.getItem(k));}catch{return null;}})
+    .filter(Boolean).sort((a,b)=>b.updatedAt-a.updatedAt);
+}
+function saveEst(e){e.updatedAt=Date.now();localStorage.setItem(EP+e.id,JSON.stringify(e));}
+function delEst(id){localStorage.removeItem(EP+id);}
+
+// ── CALCULATORS ───────────────────────────────────────────────────────────────
+function calcRoom(r){
+  const L=+r.length||0,W=+r.width||0,H=+r.ceiling||8,nw=+r.numWalls||4;
+  const perim=nw===4?2*(L+W):nw===3?L+W+Math.max(L,W):nw===2?L+W:Math.max(L,W);
+  const wallA=r.walls?Math.max(0,perim*H-(+r.doors||0)*S.doorDeduct-(+r.windows||0)*S.windowDeduct-(+r.cabinetDeduct||0)-(+r.tubDeduct||0)):0;
+  const ceilA=r.ceilPaint?L*W:0;
+  const accA=r.accentWall?(+r.accentW||0)*(+r.accentH||H):0;
+  const sqft=(wallA+ceilA+accA)*(+r.coats||2);
+  const bbLF=+r.baseboardLF||0;
+  const labor=(sqft/150)*S.laborRate+bbLF*S.baseboardRate;
+  const mat=sqft*S.matRate+bbLF*0.2;
+  return{wallA:+wallA.toFixed(1),ceilA:+ceilA.toFixed(1),accA:+accA.toFixed(1),
+    sqft:+sqft.toFixed(1),labor,mat,bbCost:+(bbLF*S.baseboardRate).toFixed(2),
+    bbLF,subtotal:labor+mat,laborHrs:+(sqft/150).toFixed(2),
+    deductions:(+r.cabinetDeduct||0)+(+r.tubDeduct||0)};
+}
+function calcExt(s){
+  const sqft=+s.sqft||0,coats=+s.coats||2;
+  const labor=sqft*S.extLaborSqft*coats+(s.twoColor?sqft*S.extSecondColor:0);
+  const mat=sqft*S.extMatSqft*coats;
+  return{sqft,labor,mat,subtotal:labor+mat};
+}
+function calcJob(j){
+  const rate=j.dayType==='Half Day (1–4 hrs)'?S.halfDay:j.dayType==='Full Day (4–8 hrs)'?S.fullDay:+j.customRate||0;
+  const days=+j.days||1;
+  return{rate,days,labor:rate*days,mat:(+j.materials||0)*(1+(+j.matMarkup||20)/100),subtotal:rate*days+(+j.materials||0)*(1+(+j.matMarkup||20)/100)};
+}
+function calcCab(cab){
+  if(!cab)return{labor:0,mat:0,subtotal:0,breakdown:[],totalPieces:0};
+  const spray=cab.method==='spray',coats=+cab.coats||2;
+  const upper=+cab.upperDoors||0,lower=+cab.lowerDoors||0,drawers=+cab.drawerFronts||0,boxes=+cab.boxes||0;
+  const td=upper+lower,tp=td+drawers+boxes;
+  const prep=cab.includePrep?(td+drawers)*S.cabPrep:0;
+  const dR=spray?S.cabDoorSpray:S.cabDoorBrush,drR=spray?S.cabDrawerSpray:S.cabDrawerBrush,bR=spray?S.cabBoxSpray:S.cabBoxBrush;
+  const setup=spray?S.cabSpraySetup:0;
+  const labor=prep+(td*dR+drawers*drR+boxes*bR)*coats+setup;
+  const mat=Math.ceil(tp/10)*18+Math.ceil(tp/8)*coats*22+td*1.5+25;
+  const bd=[upper>0&&{l:`Upper Doors (${upper})`,v:upper*dR*coats},lower>0&&{l:`Lower Doors (${lower})`,v:lower*dR*coats},drawers>0&&{l:`Drawer Fronts (${drawers})`,v:drawers*drR*coats},boxes>0&&{l:`Cabinet Boxes (${boxes})`,v:boxes*bR*coats},cab.includePrep&&td+drawers>0&&{l:`Prep & Sand (${td+drawers} pcs)`,v:prep},spray&&{l:'Spray Setup',v:setup}].filter(Boolean);
+  return{labor,mat,subtotal:tp>0?labor+mat:0,breakdown:bd,totalPieces:tp};
+}
+function applyDisc(base,val,type){const v=+val||0;if(!v)return 0;return type==='$'?Math.min(v,base):base*(v/100);}
+function getCalcs(e){
+  const rc=(e.rooms||[]).map(r=>({r,c:calcRoom(r)}));
+  const ec=(e.ext||[]).map(s=>({s,c:calcExt(s)}));
+  const jc=(e.jobs||[]).map(j=>({j,c:calcJob(j)}));
+  const cc=calcCab(e.cab);
+  const tm=e.selectedTier==='Economy'?S.econMult:e.selectedTier==='Premium'?S.premMult:1;
+  const cm=1+(S.contingency/100);
+  const intRaw=rc.reduce((a,{c})=>a+c.subtotal,0)*tm;
+  const extRaw=ec.reduce((a,{c})=>a+c.subtotal,0)*tm;
+  const jobRaw=jc.reduce((a,{c})=>a+c.subtotal,0)*tm;
+  const cabRaw=cc.subtotal*tm;
+  const intDiscAmt=applyDisc(intRaw,e.intDiscount,e.intDiscountType||'pct');
+  const extDiscAmt=applyDisc(extRaw,e.extDiscount,e.extDiscountType||'pct');
+  const jobDiscAmt=applyDisc(jobRaw,e.jobDiscount,e.jobDiscountType||'pct');
+  const cabDiscAmt=applyDisc(cabRaw,(e.cab||{}).discount,(e.cab||{}).discountType||'pct');
+  const intNet=intRaw-intDiscAmt,extNet=extRaw-extDiscAmt,jobNet=jobRaw-jobDiscAmt,cabNet=cabRaw-cabDiscAmt;
+  const grandPre=intNet+extNet+jobNet+cabNet;
+  const grandTotal=grandPre*cm;
+  const globalDisc=applyDisc(grandTotal,e.discount,e.discountType||'pct');
+  const finalQuote=grandTotal-globalDisc;
+  const cashAmt=+e.cashDiscount||0;
+  return{rc,ec,jc,cc,tm,cm,intRaw,extRaw,jobRaw,cabRaw,intDiscAmt,extDiscAmt,jobDiscAmt,cabDiscAmt,intNet,extNet,jobNet,cabNet,grandPre,grandTotal,globalDisc,finalQuote,cashAmt,cashPrice:finalQuote-cashAmt};
+}
+
+// ── APP ───────────────────────────────────────────────────────────────────────
+const App={
+  screen:'list',est:null,tab:'interior',exp:{},confDel:null,prevMode:'scope',_saveT:null,
+
+  init(){this.render();},
+
+  // ── STATE UPDATES (no re-render — safe for text inputs) ────────────────────
+  setField(obj,field,val){
+    if(obj===null){if(this.est)this.est[field]=val;}
+    else obj[field]=val;
+    this._schedSave();
+    this._updateLiveNumbers();
+  },
+  setEstField(f,v){if(this.est){this.est[f]=v;this._schedSave();this._updateLiveNumbers();}},
+  setRoomField(id,f,v){const r=(this.est.rooms||[]).find(x=>x.id===id);if(r){r[f]=v;this._schedSave();this._updateLiveNumbers();}},
+  setExtField(id,f,v){const s=(this.est.ext||[]).find(x=>x.id===id);if(s){s[f]=v;this._schedSave();this._updateLiveNumbers();}},
+  setJobField(id,f,v){const j=(this.est.jobs||[]).find(x=>x.id===id);if(j){j[f]=v;this._schedSave();this._updateLiveNumbers();}},
+  setCabField(f,v){if(!this.est)return;if(!this.est.cab)this.est.cab={};this.est.cab[f]=v;this._schedSave();this._updateLiveNumbers();},
+  setSetting(f,v){S[f]=parseFloat(v)||0;saveS();this._updateLiveNumbers();},
+
+  // ── STATE UPDATES THAT NEED A FULL RE-RENDER (checkboxes, selects) ─────────
+  setRoomFieldR(id,f,v){const r=(this.est.rooms||[]).find(x=>x.id===id);if(r){r[f]=v;this._schedSave();this.render();}},
+  setEstFieldR(f,v){if(this.est){this.est[f]=v;this._schedSave();this.render();}},
+  setCabFieldR(f,v){if(!this.est)return;if(!this.est.cab)this.est.cab={};this.est.cab[f]=v;this._schedSave();this.render();},
+
+  _schedSave(){clearTimeout(this._saveT);this._saveT=setTimeout(()=>{if(this.est)saveEst(this.est);},800);},
+
+  // ── LIVE NUMBER UPDATE (updates result cells without rebuilding inputs) ─────
+  _updateLiveNumbers(){
+    if(!this.est||this.screen!=='editor')return;
+    const cal=getCalcs(this.est);
+    const hq=document.getElementById('hdr-quote');
+    if(hq)hq.textContent=fmt(cal.finalQuote)+' · '+this.est.selectedTier;
+    // Update each room's result grid
+    (this.est.rooms||[]).forEach(r=>{
+      const c=calcRoom(r);
+      const tm=this.est.selectedTier==='Economy'?S.econMult:this.est.selectedTier==='Premium'?S.premMult:1;
+      const cm=1+(S.contingency/100);
+      const rg=document.getElementById('rg'+r.id);
+      if(rg)rg.innerHTML=this._roomCells(r,c,tm,cm);
+      const ra=document.getElementById('ra'+r.id);
+      if(ra)ra.textContent=fmt(c.subtotal*tm*cm);
+      const bbd=document.getElementById('bbd'+r.id);
+      if(bbd)bbd.textContent=fmt((+r.baseboardLF||0)*S.baseboardRate);
+      const bbh=document.getElementById('bbh'+r.id);
+      if(bbh)bbh.textContent='$'+S.baseboardRate+'/LF = '+fmt((+r.baseboardLF||0)*S.baseboardRate);
+    });
+    // Update summary if visible
+    const sq=document.getElementById('summary-quote');
+    if(sq)sq.innerHTML=this._summaryQuoteHTML(cal);
+    const td=document.getElementById('tier-display');
+    if(td)td.innerHTML=this._tierHTML(cal);
+  },
+
+  _roomCells(r,c,tm,cm){
+    return(c.wallA>0?'<div><div class="rc-label">Walls ('+( r.numWalls||4)+')</div><div class="rc-value">'+c.wallA+' sqft</div></div>':'')+
+      (c.ceilA>0?'<div><div class="rc-label">Ceiling</div><div class="rc-value">'+c.ceilA+' sqft</div></div>':'')+
+      (c.deductions>0?'<div><div class="rc-label" style="color:var(--purple)">Deducted</div><div class="rc-value" style="color:var(--purple)">-'+c.deductions+' sqft</div></div>':'')+
+      (r.accentWall?'<div><div class="rc-label" style="color:var(--purple)">Accent</div><div class="rc-value" style="color:var(--purple)">'+c.accA+' sqft</div></div>':'')+
+      '<div><div class="rc-label">Paint Sqft</div><div class="rc-value">'+c.sqft+'</div></div>'+
+      '<div><div class="rc-label">Labor Hrs</div><div class="rc-value">'+c.laborHrs+'</div></div>'+
+      (c.bbLF>0?'<div><div class="rc-label" style="color:var(--amber)">Baseboard</div><div class="rc-value" style="color:var(--amber)">'+fmt(c.bbCost)+'</div></div>':'')+
+      '<div><div class="rc-label">Room Total</div><div class="rc-value big">'+fmt(c.subtotal*tm*cm)+'</div></div>';
+  },
+
+  _summaryQuoteHTML(cal){
+    return'<div style="color:#93c5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Final Quote · '+esc(this.est.selectedTier)+'</div>'+
+      '<div style="color:var(--gold);font-weight:800;font-size:30px;line-height:1;margin-bottom:4px">'+fmt(cal.finalQuote)+'</div>'+
+      '<div style="color:#bfdbfe;font-size:12px">50% deposit: '+fmt(cal.finalQuote/2)+'</div>'+
+      (cal.cashAmt>0?'<div style="color:#86efac;font-weight:700;font-size:13px;margin-top:4px">💵 Cash Price: '+fmt(cal.cashPrice)+'</div>':'')+
+      '<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px">'+
+      (cal.intRaw>0?'<div style="color:#93c5fd">🏠 '+fmt(cal.intNet*cal.cm)+'</div>':'')+
+      (cal.extRaw>0?'<div style="color:#93c5fd">🏡 '+fmt(cal.extNet*cal.cm)+'</div>':'')+
+      (cal.jobRaw>0?'<div style="color:#93c5fd">🔧 '+fmt(cal.jobNet)+'</div>':'')+
+      (cal.cabRaw>0?'<div style="color:#93c5fd">🪚 '+fmt(cal.cabNet)+'</div>':'')+
+      (cal.globalDisc>0?'<div style="color:#fca5a5">Discount: -'+fmt(cal.globalDisc)+'</div>':'')+
+      '</div>';
+  },
+
+  _tierHTML(cal){
+    return['Economy','Standard','Premium'].map(tier=>{
+      const m=tier==='Economy'?S.econMult:tier==='Premium'?S.premMult:1;
+      const intA=(this.est.rooms||[]).reduce((a,r)=>a+calcRoom(r).subtotal,0)*m;
+      const extA=(this.est.ext||[]).reduce((a,s)=>a+calcExt(s).subtotal,0)*m;
+      const jobA=(this.est.jobs||[]).reduce((a,j)=>a+calcJob(j).subtotal,0)*m;
+      const cabA=calcCab(this.est.cab).subtotal*m;
+      const extDA=applyDisc(extA,this.est.extDiscount,this.est.extDiscountType||'pct');
+      const jobDA=applyDisc(jobA,this.est.jobDiscount,this.est.jobDiscountType||'pct');
+      const cabDA=applyDisc(cabA,(this.est.cab||{}).discount,(this.est.cab||{}).discountType||'pct');
+      const tot=(intA+extA-extDA+jobA-jobDA+cabA-cabDA)*cal.cm;
+      const d=applyDisc(tot,this.est.discount,this.est.discountType||'pct');
+      const active=this.est.selectedTier===tier;
+      const colors={Economy:'var(--green)',Standard:'var(--blue)',Premium:'var(--pink)'};
+      const col=colors[tier];
+      return'<button onclick="App.setEstFieldR(\'selectedTier\',\''+tier+'\')" style="padding:10px 6px;background:'+(active?col+'18':'var(--gray50)')+';border:2px solid '+(active?col:'var(--gray200)')+';border-radius:10px;cursor:pointer;text-align:center"><div style="font-weight:700;font-size:12px;color:'+(active?col:'var(--gray500)')+'">'+tier+'</div><div style="font-weight:800;font-size:15px;color:'+(active?col:'var(--gray400)')+';margin-top:3px">'+fmt(tot-d)+'</div></button>';
+    }).join('');
+  },
+
+  // ── SAVE ──────────────────────────────────────────────────────────────────
+  save(silent){
+    if(!this.est)return;
+    try{saveEst(this.est);if(!silent){const el=document.getElementById('save-msg');if(el){el.textContent='✓ Saved';setTimeout(()=>el.textContent='',2000);}}}
+    catch(e){console.error(e);}
+  },
+
+  // ── NAVIGATION ────────────────────────────────────────────────────────────
+  newEst(){this.est=emptyEst();this.tab='interior';this.exp={};this.screen='editor';this.render();},
+  loadEst(id){const d=localStorage.getItem(EP+id);if(d){this.est=JSON.parse(d);this.tab='interior';this.exp={};this.screen='editor';this.render();}},
+  goList(){this.save(true);this.screen='list';this.render();},
+  preview(){this.save(true);this.screen='preview';this.render();},
+  setTab(t){this.tab=t;this.render();},
+  toggle(k){this.exp[k]=!this.exp[k];this.render();},
+
+  addRoom(){const r=emptyRoom('Room '+((this.est.rooms||[]).length+1));this.est.rooms.push(r);this.exp['r'+r.id]=true;this._schedSave();this.render();},
+  delRoom(id){this.est.rooms=this.est.rooms.filter(r=>r.id!==id);this._schedSave();this.render();},
+  addExt(){if(!this.est.ext)this.est.ext=[];const s=emptyExt('Section '+((this.est.ext||[]).length+1));this.est.ext.push(s);this.exp['e'+s.id]=true;this._schedSave();this.render();},
+  delExt(id){this.est.ext=this.est.ext.filter(s=>s.id!==id);this._schedSave();this.render();},
+  addJob(){if(!this.est.jobs)this.est.jobs=[];this.est.jobs.push(emptyJob());this._schedSave();this.render();},
+  delJob(id){this.est.jobs=this.est.jobs.filter(j=>j.id!==id);this._schedSave();this.render();},
+
+  confDelete(id){
+    if(this.confDel===id){delEst(id);this.confDel=null;this.render();}
+    else{this.confDel=id;setTimeout(()=>{this.confDel=null;this.render();},3000);this.render();}
+  },
+
+  // ── INPUT BUILDERS ────────────────────────────────────────────────────────
+  // KEY: use oninput for live updates WITHOUT re-rendering
+  inp(lbl,val,cb,type,ph,hint){
+    return'<div><label class="label">'+lbl+'</label><input class="input" type="'+(type||'text')+'" value="'+esc(val)+'" placeholder="'+(ph||'')+'" inputmode="'+(type==='number'?'decimal':'')+'" oninput="'+cb+'" onchange="'+cb+'"/>'+(hint?'<div style="font-size:10px;color:var(--gray400);margin-top:3px" id="bbh'+ph+'">'+hint+'</div>':'')+'</div>';
+  },
+  ta(lbl,val,cb,ph,rows){
+    return'<div><label class="label">'+lbl+'</label><textarea class="input" rows="'+(rows||3)+'" placeholder="'+(ph||'')+'" oninput="'+cb+'" onchange="'+cb+'">'+esc(val)+'</textarea></div>';
+  },
+  sel(lbl,val,opts,cb){
+    return'<div><label class="label">'+lbl+'</label><select class="input" onchange="'+cb+'">'+opts.map(o=>'<option'+(o===val?' selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+  },
+  dtypeBtns(tv,color,onPct,onDlr){
+    return'<div style="display:flex;border:2px solid '+color+';border-radius:8px;overflow:hidden">'+
+      '<button class="dtype-btn" onclick="'+onPct+'" style="background:'+(tv==='pct'?color:'#fff')+';color:'+(tv==='pct'?'#fff':color)+'">%</button>'+
+      '<button class="dtype-btn" onclick="'+onDlr+'" style="background:'+(tv==='$'?color:'#fff')+';color:'+(tv==='$'?'#fff':color)+'">$</button>'+
+      '</div>';
+  },
+
+  discBox(lbl,dv,lv,tv,raw,discAmt,net,color,onD,onL,onPct,onDlr){
+    return'<div style="background:#fff;border-radius:12px;padding:16px;margin-top:8px;box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid '+color+'">'+
+      '<div style="font-weight:700;font-size:11px;color:'+color+';text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🏷️ '+lbl+'</div>'+
+      '<div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:end;margin-bottom:10px">'+
+      '<div><label class="label">Type</label>'+this.dtypeBtns(tv,color,onPct,onDlr)+'</div>'+
+      '<div><label class="label">'+(tv==='pct'?'Discount %':'Discount $')+'</label><input class="input" type="number" inputmode="decimal" value="'+esc(dv)+'" placeholder="'+(tv==='pct'?'17.76':'100')+'" oninput="'+onD+'" onchange="'+onD+'"/></div>'+
+      '<div><label class="label">Promo Label</label><input class="input" value="'+esc(lv)+'" placeholder="e.g. 4th of July" oninput="'+onL+'" onchange="'+onL+'"/></div>'+
+      '</div>'+
+      (discAmt>0?'<div style="background:'+color+'18;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:'+color+';font-weight:600">'+(lv||lbl)+': saving '+fmt(discAmt)+'</span><span style="font-weight:800;font-size:16px;color:'+color+'">'+fmt(net)+'</span></div>':
+       '<div style="font-size:12px;color:var(--gray400)">Subtotal: '+fmt(raw)+' — enter discount to apply</div>')+
+      '</div>';
+  },
+
+  matBox(val,cb,color,bg,border){
+    return'<div style="background:'+bg+';border:1px solid '+border+';border-radius:12px;padding:14px;margin-top:8px">'+
+      '<div style="font-weight:700;font-size:11px;color:'+color+';text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">🧾 Material Cost Tracker</div>'+
+      '<div class="grid2">'+
+      '<div><label class="label">Total Materials Spent ($)</label><input class="input" type="number" inputmode="decimal" value="'+esc(val)+'" placeholder="e.g. 350" oninput="'+cb+'" onchange="'+cb+'"/><div style="font-size:10px;color:var(--gray400);margin-top:3px">Paint, primer, tape, rollers, etc.</div></div>'+
+      '<div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid '+border+';display:flex;flex-direction:column;justify-content:center">'+
+      (val&&+val>0?'<div style="font-size:11px;color:var(--gray500)">Your material cost</div><div style="font-weight:800;font-size:18px;color:'+color+'">$'+(+val).toFixed(2)+'</div>':'<div style="font-size:12px;color:var(--gray400)">Enter your spend above</div>')+
+      '</div></div></div>';
+  },
+
+  // ── WHOLE HOUSE MODAL ─────────────────────────────────────────────────────
+  showWholeHouseModal(){
+    const m=document.getElementById('modal-root');
+    m.innerHTML='<div class="modal-overlay" onclick="if(event.target===this)App.closeModal()">'+
+      '<div class="modal">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
+      '<div style="font-weight:800;font-size:17px;color:var(--navy)">🏠 Whole House Quote</div>'+
+      '<button onclick="App.closeModal()" style="background:none;border:none;font-size:20px;color:var(--gray400);cursor:pointer">✕</button></div>'+
+      '<div style="font-size:12px;color:var(--gray500);margin-bottom:14px">Enter house details for a flat rate — great for photo quotes</div>'+
+      '<div class="grid2" style="margin-bottom:12px">'+
+      '<div><label class="label">House Sq Footage</label><input id="wh-sqft" class="input" type="number" inputmode="decimal" placeholder="e.g. 2000"/></div>'+
+      '<div><label class="label">Stories</label><select id="wh-stories" class="input"><option>1 Story</option><option selected>2 Story</option><option>Tri-Level / Split</option><option>3 Story</option></select></div>'+
+      '<div><label class="label">Neighborhood / Area</label><input id="wh-hood" class="input" type="text" placeholder="e.g. Lincolnshire"/></div>'+
+      '<div><label class="label">Home Condition</label><select id="wh-cond" class="input"><option>New / Excellent</option><option selected>Good (5–15 yrs)</option><option>Fair (15–30 yrs)</option><option>Older / Needs Prep (30+ yrs)</option></select></div>'+
+      '</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Include In Quote</div>'+
+      '<div class="grid2" style="margin-bottom:12px">'+
+      '<label class="check-label"><input type="checkbox" id="wh-walls" checked/> Walls</label>'+
+      '<label class="check-label"><input type="checkbox" id="wh-ceilings"/> Ceilings</label>'+
+      '<label class="check-label"><input type="checkbox" id="wh-trim"/> Trim / Baseboards</label>'+
+      '<label class="check-label"><input type="checkbox" id="wh-doors"/> Doors</label>'+
+      '<label class="check-label"><input type="checkbox" id="wh-windows"/> Window Trim</label>'+
+      '<label class="check-label"><input type="checkbox" id="wh-closets"/> Closets</label>'+
+      '</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Coats</div>'+
+      '<div class="grid3" style="margin-bottom:14px">'+
+      '<button id="wc1" onclick="App.whCoat(1)" style="padding:9px;border:2px solid var(--gray200);border-radius:8px;background:#fff;font-weight:700;font-size:13px">1 Coat</button>'+
+      '<button id="wc2" onclick="App.whCoat(2)" style="padding:9px;border:2px solid var(--navy);border-radius:8px;background:var(--navy);color:#fff;font-weight:700;font-size:13px">2 Coats</button>'+
+      '<button id="wc3" onclick="App.whCoat(3)" style="padding:9px;border:2px solid var(--gray200);border-radius:8px;background:#fff;font-weight:700;font-size:13px">3 Coats</button>'+
+      '</div>'+
+      '<div id="wh-result" style="display:none;background:var(--gray50);border-radius:12px;padding:14px;margin-bottom:14px"></div>'+
+      '<div style="display:flex;gap:8px">'+
+      '<button class="btn btn-sm" style="flex:1;background:#f1f5f9;color:var(--gray500)" onclick="App.calcWH()">Calculate Range</button>'+
+      '<button class="btn btn-sm btn-primary" style="flex:1" onclick="App.applyWH()">Apply to Estimate</button>'+
+      '</div></div></div>';
+    this._whCoats=2;
+  },
+  whCoat(n){
+    this._whCoats=n;
+    [1,2,3].forEach(i=>{
+      const b=document.getElementById('wc'+i);
+      if(!b)return;
+      b.style.background=i===n?'var(--navy)':'#fff';
+      b.style.color=i===n?'#fff':'';
+      b.style.borderColor=i===n?'var(--navy)':'var(--gray200)';
+    });
+  },
+  calcWH(){
+    const sqft=+document.getElementById('wh-sqft').value||0;
+    if(!sqft){alert('Enter the house square footage first');return;}
+    const stories=document.getElementById('wh-stories').value;
+    const hood=(document.getElementById('wh-hood').value||'').toLowerCase();
+    const cond=document.getElementById('wh-cond').value;
+    const walls=document.getElementById('wh-walls').checked;
+    const ceilings=document.getElementById('wh-ceilings').checked;
+    const trim=document.getElementById('wh-trim').checked;
+    const doors=document.getElementById('wh-doors').checked;
+    const windows=document.getElementById('wh-windows').checked;
+    const closets=document.getElementById('wh-closets').checked;
+    const coats=this._whCoats||2;
+    // Location multiplier
+    let locM=1.0;
+    if(/lincoln park|gold coast|river north|old town|lakeview|wicker park|bucktown/.test(hood))locM=1.35;
+    else if(/lincolnshire|lake forest|highland park|winnetka|kenilworth|glencoe|northbrook|wilmette|hinsdale|oak brook|barrington|burr ridge/.test(hood))locM=1.25;
+    else if(/schaumburg|buffalo grove|glenview|deerfield|libertyville|palatine|arlington heights|elmhurst|glen ellyn|downers grove/.test(hood))locM=1.10;
+    else if(/south side|west side|cicero|berwyn|harvey|calumet|dolton/.test(hood))locM=0.95;
+    else if(/joliet|waukegan|aurora|elgin|oswego|romeoville|bolingbrook|plainfield/.test(hood))locM=0.90;
+    // Condition
+    let condM=/new|excellent/i.test(cond)?0.90:/fair/i.test(cond)?1.15:/older|needs/i.test(cond)?1.30:1.0;
+    // Story
+    let storyM=stories.includes('Tri')||stories.includes('Split')?1.12:stories.includes('3 Story')?1.18:stories.includes('2')?1.05:1.0;
+    // Coat
+    let coatM=coats===1?0.75:coats===3?1.35:1.0;
+    // Add-ons
+    let addPct=0;
+    if(!walls)addPct-=0.60;
+    if(ceilings)addPct+=0.30;
+    if(trim)addPct+=0.18;
+    if(doors)addPct+=0.12;
+    if(windows)addPct+=0.08;
+    if(closets)addPct+=0.06;
+    const base=sqft*1.85*(1+addPct)*storyM*coatM*condM*locM;
+    const eco=base*0.85,prem=base*1.25;
+    const included=[walls&&'Walls',ceilings&&'Ceilings',trim&&'Trim/Baseboards',doors&&'Doors',windows&&'Window Trim',closets&&'Closets'].filter(Boolean);
+    const locNote=locM>1.15?'<div style="font-size:11px;color:var(--green);margin-top:6px">📍 Premium market — price reflects local rates</div>':locM<0.95?'<div style="font-size:11px;color:var(--amber);margin-top:6px">📍 Adjusted for local market rates</div>':'';
+    const res=document.getElementById('wh-result');
+    res.style.display='block';
+    res.innerHTML='<div style="font-weight:700;font-size:12px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">'+sqft.toLocaleString()+' sqft · '+stories+' · '+coats+' coat'+(coats>1?'s':'')+'</div>'+
+      '<div class="grid3" style="margin-bottom:10px">'+
+      '<div style="background:#e8f5e9;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;margin-bottom:3px">Economy</div><div style="font-weight:800;font-size:17px;color:var(--green)">'+fmt(eco)+'</div></div>'+
+      '<div style="background:#e3f2fd;border-radius:8px;padding:10px;text-align:center;border:2px solid var(--blue)"><div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;margin-bottom:3px">Standard ★</div><div style="font-weight:800;font-size:17px;color:var(--blue)">'+fmt(base)+'</div></div>'+
+      '<div style="background:#fce4ec;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--pink);text-transform:uppercase;margin-bottom:3px">Premium</div><div style="font-weight:800;font-size:17px;color:var(--pink)">'+fmt(prem)+'</div></div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--gray500);margin-bottom:3px"><b>Includes:</b> '+(included.join(', ')||'Nothing selected')+'</div>'+
+      (hood?'<div style="font-size:12px;color:var(--gray500)"><b>Area:</b> '+document.getElementById('wh-hood').value+' ('+(locM>1?'+':'')+Math.round((locM-1)*100)+'% adjustment)</div>':'')+
+      locNote+
+      '<div style="font-size:11px;color:var(--gray400);margin-top:8px;padding-top:8px;border-top:1px solid var(--gray200)">⚠️ Photo quote — confirm in person before finalizing.</div>';
+    this._whLast={sqft,stories,hood,cond,coats,walls,ceilings,trim,doors,windows,closets,base,eco,prem,included};
+  },
+  applyWH(){
+    if(!this._whLast){this.calcWH();if(!this._whLast)return;}
+    const r=this._whLast;
+    const e=emptyEst();
+    e.paintBrand='Benjamin Moore';e.estDuration='TBD — pending site visit';e.cashDiscount='100';
+    e.notes='Photo quote — '+r.sqft.toLocaleString()+' sqft '+r.stories+'. Scope: '+r.included.join(', ')+'. '+r.coats+' coat'+(r.coats>1?'s':'')+'. Confirm in person before finalizing.';
+    const floors=r.stories.includes('Tri')||r.stories.includes('Split')?['Lower Level','Main Level','Upper Level']:r.stories.includes('3 Story')?['First Floor','Second Floor','Third Floor']:r.stories.includes('2')?['First Floor','Second Floor']:['Main Floor'];
+    const fps=Math.round(r.sqft/floors.length);
+    e.rooms=floors.map((fl,i)=>({
+      id:uid(),name:fl,
+      length:String(Math.round(Math.sqrt(fps*1.4))),
+      width:String(Math.round(fps/Math.sqrt(fps*1.4))),
+      ceiling:i===0&&r.stories.includes('Tri')?'7':'9',
+      numWalls:'4',walls:r.walls,ceilPaint:r.ceilings,
+      accentWall:false,accentW:'',accentH:'',
+      doors:i===0?'2':'3',windows:'3',
+      baseboardLF:r.trim?String(Math.round(Math.sqrt(fps)*4)):'',
+      cabinetDeduct:'',tubDeduct:'',coats:String(r.coats)
+    }));
+    this.est=e;this.tab='interior';this.exp={};this.screen='editor';
+    this.closeModal();this.render();
+  },
+  closeModal(){document.getElementById('modal-root').innerHTML='';},
+
+  // ── SCOPE / TEXT BUILDERS ────────────────────────────────────────────────
+  buildScopeHTML(){
+    const e=this.est,cal=getCalcs(e),en=e.id.replace('est-','JJP-');
+    const sections=[
+      ...(e.rooms||[]).filter(r=>r.name).map(r=>'<div style="margin-bottom:18px"><div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">'+esc(r.name)+'</div><div style="padding-left:4px">'+
+        (r.walls?'<div style="font-size:13px;color:#374151;padding:3px 0;line-height:1.6">• Prep, prime, and paint walls — '+r.coats+' coat'+(+r.coats>1?'s':'')+'</div>':'')+
+        (r.ceilPaint?'<div style="font-size:13px;color:#374151;padding:3px 0">• Paint ceiling</div>':'')+
+        (r.accentWall?'<div style="font-size:13px;color:#374151;padding:3px 0">• Accent wall — '+(r.accentW||'?')+'×'+(r.accentH||r.ceiling||8)+' ft</div>':'')+
+        (+r.baseboardLF>0?'<div style="font-size:13px;color:#374151;padding:3px 0">• Paint baseboards — '+r.baseboardLF+' linear feet</div>':'')+
+        (+r.cabinetDeduct>0||+r.tubDeduct>0?'<div style="font-size:13px;color:#374151;padding:3px 0">• Working around existing fixtures</div>':'')+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Clean, sand, prep, and caulk surfaces as necessary</div>'+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Spot prime where needed for proper adhesion</div>'+
+        (e.paintBrand?'<div style="font-size:13px;color:#374151;padding:3px 0">• Apply premium finish using '+esc(e.paintBrand)+' paints</div>':'')+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Protect flooring and adjacent surfaces</div>'+
+        '</div></div>'),
+      ...(e.ext||[]).filter(s=>s.name).map(s=>'<div style="margin-bottom:18px"><div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">'+esc(s.name)+(s.description?' — '+esc(s.description):'')+'</div><div style="padding-left:4px">'+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Prep and paint exterior surface — '+s.coats+' coat'+(+s.coats>1?'s':'')+'</div>'+
+        (s.twoColor?'<div style="font-size:13px;color:#374151;padding:3px 0">• Two-color application</div>':'')+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Light sanding and surface preparation included</div>'+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Caulking and spot priming where necessary</div>'+
+        (e.paintBrand?'<div style="font-size:13px;color:#374151;padding:3px 0">• Finish with premium '+esc(e.paintBrand)+' exterior-grade coating</div>':'')+
+        '</div></div>'),
+      ...(e.jobs||[]).filter(j=>j.description).map(j=>'<div style="margin-bottom:18px"><div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">'+esc(j.description)+'</div><div style="padding-left:4px">'+
+        (j.notes?j.notes.split('.').filter(Boolean).map(n=>'<div style="font-size:13px;color:#374151;padding:3px 0">• '+esc(n.trim())+'</div>').join(''):'')+
+        '<div style="font-size:13px;color:#374151;padding:3px 0">• Includes labor and materials</div>'+
+        '</div></div>'),
+      ...(cal.cabRaw>0?['<div style="margin-bottom:18px"><div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">Cabinet Painting</div><div style="padding-left:4px"><div style="font-size:13px;color:#374151;padding:3px 0">• Remove all cabinet doors and drawer fronts</div><div style="font-size:13px;color:#374151;padding:3px 0">• Clean, sand, and prep all surfaces</div><div style="font-size:13px;color:#374151;padding:3px 0">• '+(e.cab&&e.cab.method==='spray'?'Spray apply':'Brush and roll')+' premium finish — '+(e.cab&&e.cab.coats||2)+' coats</div><div style="font-size:13px;color:#374151;padding:3px 0">• Reinstall all doors and hardware upon completion</div></div></div>']:[]),
+    ].join('');
+    return'<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:Arial,sans-serif;color:#1a1a2e;background:#fff;padding:36px;max-width:780px;margin:0 auto;}.hdr{background:linear-gradient(135deg,#1a3a5c,#2563a8);border-radius:12px 12px 0 0;padding:26px 30px;display:flex;justify-content:space-between;align-items:flex-start;}.body{border:1px solid #e2e8f0;border-top:none;border-radius:0 0 12px 12px;padding:26px 30px;}.cg{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:22px;padding-bottom:16px;border-bottom:2px solid #f1f5f9;}.ml{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}.mv{font-size:13px;color:#1a1a2e;}.ms{font-size:15px;font-weight:700;}.tb{text-align:center;padding:20px;background:#f8fafc;border-radius:12px;margin-bottom:16px;}.tl{font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}.ta{font-size:40px;font-weight:800;color:#1a3a5c;line-height:1;}.td{font-size:12px;color:#94a3b8;margin-top:5px;}.cd{border-top:1px dashed #e2e8f0;margin:12px 0 10px;}.cl{font-size:13px;color:#64748b;margin-bottom:4px;}.ca{font-size:30px;font-weight:800;color:#16a34a;}.cs{font-size:12px;color:#16a34a;margin-top:3px;}.nb{background:#f8fafc;border-left:4px solid #2563a8;border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:16px;}.sr{display:flex;justify-content:space-between;margin-top:24px;padding-top:18px;border-top:1px solid #f1f5f9;}.sl{border-bottom:1px solid #cbd5e1;width:150px;margin-bottom:5px;}.ft{text-align:center;margin-top:16px;padding-top:14px;border-top:1px solid #f1f5f9;}@media print{body{padding:0;}}</style></head><body>'+
+      '<div class="hdr"><div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;background:#f59e0b;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px">🎨</div><div><div style="color:#fff;font-weight:800;font-size:20px">JoeJo\'s Painting</div><div style="color:#93c5fd;font-size:12px">joejospaintinginc@gmail.com</div><div style="color:#93c5fd;font-size:12px;font-style:italic">"Quality you can count on."</div></div></div><div style="text-align:right"><div style="color:#f59e0b;font-weight:800;font-size:24px">ESTIMATE</div><div style="color:#bfdbfe;font-size:12px">#'+en+'</div><div style="color:#bfdbfe;font-size:12px">'+e.createdAt+'</div></div></div>'+
+      '<div class="body"><div class="cg"><div><div class="ml">Customer Information</div><div class="ms">'+(esc(e.customerName)||'—')+'</div>'+(e.jobAddress?'<div class="mv">'+esc(e.jobAddress)+'</div>':'')+(e.customerPhone?'<div class="mv">'+esc(e.customerPhone)+'</div>':'')+(e.customerEmail?'<div class="mv">'+esc(e.customerEmail)+'</div>':'')+'</div><div style="text-align:right">'+(e.paintBrand?'<div class="mv"><b>'+esc(e.paintBrand)+'</b></div>':'')+(e.estDuration?'<div class="mv">Duration: '+esc(e.estDuration)+'</div>':'')+'<div class="mv">Valid: 30 days</div></div></div>'+
+      (sections?'<div style="font-size:11px;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📋 Scope of Work</div>'+sections+'<div style="border-top:2px solid #e2e8f0;margin:20px 0"></div>':'')+
+      '<div class="tb"><div class="tl">Total Investment</div><div class="ta">'+fmt(cal.finalQuote)+'</div><div class="td">50% deposit ('+fmt(cal.finalQuote/2)+') required to schedule</div><div class="cd"></div><div class="cl">Optional Cash Price</div><div class="ca">'+fmt(cal.finalQuote-(cal.cashAmt||100))+'</div><div class="cs">Save '+fmt(cal.cashAmt||100)+' when paying cash</div></div>'+
+      (e.notes?'<div class="nb"><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Notes</div><div style="font-size:13px;color:#475569">'+esc(e.notes)+'</div></div>':'')+
+      '<div style="margin-bottom:14px"><div style="font-size:13px;color:#374151;padding:2px 0">• Color selection at homeowner\'s choice</div><div style="font-size:13px;color:#374151;padding:2px 0">• Proper masking and protection included</div>'+(e.estDuration?'<div style="font-size:13px;color:#374151;padding:2px 0">• Estimated duration: '+esc(e.estDuration)+'</div>':'')+' <div style="font-size:13px;color:#374151;padding:2px 0">• Payment due upon completion</div></div>'+
+      '<div class="sr"><div><div class="sl"></div><div style="font-size:11px;color:#94a3b8">Customer Signature</div></div><div><div class="sl" style="width:110px"></div><div style="font-size:11px;color:#94a3b8">Date</div></div></div>'+
+      '<div class="ft"><b style="font-size:13px;color:#1a3a5c">JoeJo\'s Painting</b><div style="font-size:12px;color:#64748b">joejospaintinginc@gmail.com · Thank you for your business! 🎨</div></div>'+
+      '</div></body></html>';
+  },
+
+  buildText(){
+    const e=this.est,cal=getCalcs(e),en=e.id.replace('est-','JJP-'),line='─'.repeat(54);
+    let t='═══════════════════════════════════════════════════════\n   🎨  JoeJo\'s Painting  —  ESTIMATE\n═══════════════════════════════════════════════════════\n  Estimate #: '+en+'\n  Date: '+e.createdAt+'\n  From: joejospaintinginc@gmail.com\n'+line+'\n  Customer : '+(e.customerName||'—')+'\n  Address  : '+(e.jobAddress||'—')+'\n  Phone    : '+(e.customerPhone||'—')+'\n  Email    : '+(e.customerEmail||'—')+'\n'+line+'\n';
+    if(cal.rc.length>0){t+='  INTERIOR\n';cal.rc.forEach(({r,c})=>{t+='  • '+r.name+': '+c.sqft+' sqft'+(c.bbLF>0?' + '+c.bbLF+'LF baseboard':'')+' — '+fmt(c.subtotal*cal.tm*cal.cm)+'\n';});}
+    if(cal.ec.length>0){t+='\n  EXTERIOR\n';cal.ec.forEach(({s,c})=>{t+='  • '+s.name+': '+c.sqft+' sqft — '+fmt(c.subtotal*cal.cm)+'\n';});}
+    if(cal.jc.length>0){t+='\n  ONE-OFF\n';cal.jc.forEach(({j,c})=>{t+='  • '+(j.description||j.dayType)+': '+fmt(c.subtotal)+'\n';});}
+    if(cal.cabRaw>0)t+='\n  CABINETS: '+fmt(cal.cabNet)+'\n';
+    t+='\n'+line+'\n';
+    if(cal.intRaw>0)t+='  Interior:  '+fmt(cal.intNet*cal.cm)+'\n';
+    if(cal.extRaw>0)t+='  Exterior:  '+fmt(cal.extNet*cal.cm)+'\n';
+    if(cal.jobRaw>0)t+='  One-Off:   '+fmt(cal.jobNet)+'\n';
+    if(cal.cabRaw>0)t+='  Cabinets:  '+fmt(cal.cabNet)+'\n';
+    if(cal.globalDisc>0)t+='  '+( e.discountLabel||'Discount')+': -'+fmt(cal.globalDisc)+'\n';
+    t+=line+'\n  ★ TOTAL INVESTMENT:  '+fmt(cal.finalQuote)+'\n  50% Deposit:         '+fmt(cal.finalQuote/2)+'\n';
+    if(cal.cashAmt>0)t+='  💵 Cash Price:       '+fmt(cal.cashPrice)+' (save '+fmt(cal.cashAmt)+')\n';
+    t+=line+'\n'+(e.notes?'  NOTES: '+e.notes+'\n'+line+'\n':'')+'  • Valid 30 days  • 50% deposit required\n  Customer Signature: ___________________  Date: ______\n'+'═══════════════════════════════════════════════════════';
+    return t;
+  },
+
+  download(){
+    const e=this.est,en=e.id.replace('est-','JJP-');
+    if(this.prevMode==='scope'){
+      const blob=new Blob([this.buildScopeHTML()],{type:'text/html;charset=utf-8'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='JoeJos_Scope_'+en+'.html';document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+    } else {
+      const blob=new Blob([this.buildText()],{type:'text/plain'});
+      const url=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=url;a.download='JoeJos_Estimate_'+en+'.txt';document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+    }
+  },
+  gmail(){
+    const e=this.est,en=e.id.replace('est-','JJP-'),cal=getCalcs(e);
+    const subj=encodeURIComponent('Painting Estimate '+en+' - JoeJo\'s Painting');
+    window.open('https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(e.customerEmail||'')+'&su='+subj+'&body='+encodeURIComponent(this.buildText())+'&authuser=joejospaintinginc@gmail.com','_blank');
+  },
+  sms(){
+    const e=this.est,cal=getCalcs(e);
+    const t='Hi '+(e.customerName||'there')+', here\'s your estimate from JoeJo\'s Painting!\nTotal ('+e.selectedTier+'): '+fmt(cal.finalQuote)+'\n💵 Cash: '+fmt(cal.cashPrice)+'\n50% deposit: '+fmt(cal.finalQuote/2)+'\nValid 30 days. Thanks! 🎨';
+    window.open('sms:'+(e.customerPhone||'')+'?body='+encodeURIComponent(t));
+  },
+  copy(){navigator.clipboard.writeText(this.buildText()).then(()=>{const el=document.getElementById('save-msg');if(el){el.textContent='Copied!';setTimeout(()=>el.textContent='',2000);}});},
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
+  render(){
+    const s=this.screen;
+    document.getElementById('hdr-title').textContent=s==='list'?'JoeJo\'s Painting':s==='editor'?(this.est&&this.est.customerName||'New Estimate'):'Estimate Preview';
+    document.getElementById('hdr-quote').textContent=s==='editor'&&this.est?fmt(getCalcs(this.est).finalQuote)+' · '+this.est.selectedTier:'';
+    document.getElementById('btn-save').style.display=s==='list'?'none':'';
+    document.getElementById('btn-preview').style.display=s==='list'?'none':'';
+    if(s==='list'){this.renderList();document.getElementById('tabbar').innerHTML='';}
+    else if(s==='editor'){this.renderEditor();}
+    else if(s==='preview'){this.renderPreview();document.getElementById('tabbar').innerHTML='';}
+  },
+
+  renderList(){
+    const ests=allEsts();
+    let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-weight:800;font-size:20px;color:var(--navy)">Estimates</div><button class="btn btn-gold" onclick="App.newEst()">+ New Estimate</button></div>'+
+      '<div class="card" style="margin-bottom:14px"><div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚡ Quick Start</div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-sm" style="background:#f0f7ff;border:2px solid var(--blue);color:var(--navy)" onclick="App.newEst()">+ Blank Estimate</button><button class="btn btn-sm" style="background:#fefce8;border:2px solid var(--gold);color:var(--amber)" onclick="App.showWholeHouseModal()">🏠 Whole House Quote</button></div></div>';
+    if(!ests.length){h+='<div class="empty"><div style="font-size:44px;margin-bottom:10px">📋</div><div style="font-weight:700;font-size:17px;margin-bottom:6px">No saved estimates</div><div>Create your first estimate to get started</div></div>';}
+    else ests.forEach(e=>{
+      const cal=getCalcs(e),isCon=this.confDel===e.id;
+      h+='<div class="card" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center" onclick="App.loadEst(\''+e.id+'\')">'+
+        '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:15px">'+esc(e.customerName||'Unnamed Customer')+'</div>'+
+        '<div style="font-size:12px;color:var(--gray500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(e.jobAddress||'No address')+'</div>'+
+        '<div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">'+
+        ((e.rooms||[]).length>0?'<span class="badge" style="background:#e3f2fd;color:#1565c0">🏠 '+(e.rooms||[]).length+'</span>':'')+
+        ((e.ext||[]).length>0?'<span class="badge" style="background:#e8f5e9;color:var(--green)">🏡 Ext</span>':'')+
+        ((e.jobs||[]).length>0?'<span class="badge" style="background:#fce4ec;color:var(--pink)">🔧 '+(e.jobs||[]).length+'</span>':'')+
+        (cal.cabRaw>0?'<span class="badge" style="background:#fffbeb;color:var(--amber)">🪚 Cab</span>':'')+
+        '</div></div>'+
+        '<div style="text-align:right;margin-left:12px;flex-shrink:0">'+
+        '<div style="font-weight:800;font-size:16px;color:var(--navy)">'+fmt(cal.finalQuote)+'</div>'+
+        '<div style="font-size:11px;color:var(--gray400);margin-bottom:6px">'+e.createdAt+' · '+e.selectedTier+'</div>'+
+        '<button onclick="event.stopPropagation();App.confDelete(\''+e.id+'\')" style="background:'+(isCon?'var(--red)':'none')+';border:1px solid var(--red);color:'+(isCon?'#fff':'var(--red)')+';border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer;min-width:58px">'+(isCon?'Confirm':'Delete')+'</button>'+
+        '</div></div>';
+    });
+    document.getElementById('content').innerHTML=h;
+  },
+
+  renderTabBar(){
+    const t=this.tab;
+    document.getElementById('tabbar').innerHTML=
+      '<button class="tab-btn" onclick="App.goList()"><span class="tab-icon">☰</span>All</button>'+
+      '<button class="tab-btn'+(t==='interior'?' active':'')+'" onclick="App.setTab(\'interior\')"><span class="tab-icon">🏠</span>Interior</button>'+
+      '<button class="tab-btn'+(t==='exterior'?' active':'')+'" onclick="App.setTab(\'exterior\')"><span class="tab-icon">🏡</span>Exterior</button>'+
+      '<button class="tab-btn'+(t==='summary'?' active':'')+'" onclick="App.setTab(\'summary\')"><span class="tab-icon">📊</span>Summary</button>'+
+      '<button class="tab-btn" onclick="App.preview()"><span class="tab-icon">👁</span>Preview</button>';
+  },
+
+  renderEditor(){
+    this.renderTabBar();
+    const e=this.est,cal=getCalcs(e);
+    const tabs=[{id:'interior',icon:'🏠',label:'Interior',cnt:(e.rooms||[]).length},{id:'exterior',icon:'🏡',label:'Exterior',cnt:(e.ext||[]).length},{id:'oneoff',icon:'🔧',label:'One-Off',cnt:(e.jobs||[]).length},{id:'cabinets',icon:'🪚',label:'Cabinets'},{id:'summary',icon:'📊',label:'Summary'},{id:'settings',icon:'⚙️',label:'Settings'}];
+    let h='<div class="card">'+
+      '<div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Customer Info</div>'+
+      '<div class="grid2">'+
+      this.inp('Customer Name',e.customerName,"App.setEstField('customerName',this.value)",'text','Full name')+
+      this.inp('Job Address',e.jobAddress,"App.setEstField('jobAddress',this.value)",'text','Street address')+
+      this.inp('Email',e.customerEmail,"App.setEstField('customerEmail',this.value)",'email','email@example.com')+
+      this.inp('Phone',e.customerPhone,"App.setEstField('customerPhone',this.value)",'tel','(555) 000-0000')+
+      '</div></div>'+
+      '<div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px">';
+    tabs.forEach(t=>{
+      const a=this.tab===t.id;
+      h+='<button onclick="App.setTab(\''+t.id+'\')" style="padding:7px 12px;border:2px solid '+(a?'var(--navy)':'var(--gray200)')+';background:'+(a?'var(--navy)':'#fff')+';color:'+(a?'#fff':'var(--gray500)')+';border-radius:8px;font-weight:700;font-size:12px;white-space:nowrap;cursor:pointer;flex-shrink:0">'+t.icon+' '+t.label+(t.cnt!=null?' ('+t.cnt+')':'')+'</button>';
+    });
+    h+='</div>';
+    if(this.tab==='interior')h+=this.renderInterior(e,cal);
+    else if(this.tab==='exterior')h+=this.renderExterior(e,cal);
+    else if(this.tab==='oneoff')h+=this.renderOneOff(e,cal);
+    else if(this.tab==='cabinets')h+=this.renderCabinets(e,cal);
+    else if(this.tab==='summary')h+=this.renderSummary(e,cal);
+    else if(this.tab==='settings')h+=this.renderSettings();
+    document.getElementById('content').innerHTML=h;
+  },
+
+  renderInterior(e,cal){
+    let h='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700;font-size:15px">🏠 Rooms <span style="color:var(--gray400);font-weight:400;font-size:13px">('+(e.rooms||[]).length+')</span></div><button class="btn btn-primary btn-sm" onclick="App.addRoom()">+ Add Room</button></div>';
+    if(!(e.rooms||[]).length)h+='<div class="empty">No rooms yet — tap Add Room</div>';
+    (e.rooms||[]).forEach(r=>{
+      const c=calcRoom(r),open=this.exp['r'+r.id];
+      h+='<div class="accordion">'+
+        '<div class="accordion-hdr" onclick="App.toggle(\'r'+r.id+'\')">'+
+        '<div><div style="font-weight:700;font-size:14px">'+esc(r.name)+'</div>'+
+        (r.length&&r.width?'<div style="font-size:11px;color:var(--gray500);margin-top:2px">'+r.length+'′×'+r.width+'′ · '+c.sqft+' sqft'+(c.bbLF>0?' · '+c.bbLF+'LF bb':'')+'</div>':'')+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:10px"><span id="ra'+r.id+'" style="font-weight:700;color:var(--navy)">'+fmt(c.subtotal*cal.tm*cal.cm)+'</span><span style="color:var(--gray400)">'+(open?'▲':'▼')+'</span></div>'+
+        '</div>';
+      if(open){
+        h+='<div class="accordion-body">'+
+          '<div class="grid-auto" style="margin-bottom:12px">'+
+          this.inp('Room Name',r.name,"App.setRoomField('"+r.id+"','name',this.value)")+
+          this.inp('Length ft',r.length,"App.setRoomField('"+r.id+"','length',this.value)",'number','12')+
+          this.inp('Width ft',r.width,"App.setRoomField('"+r.id+"','width',this.value)",'number','10')+
+          this.inp('Ceiling ft',r.ceiling,"App.setRoomField('"+r.id+"','ceiling',this.value)",'number','8')+
+          this.inp('Doors',r.doors,"App.setRoomField('"+r.id+"','doors',this.value)",'number','1')+
+          this.inp('Windows',r.windows,"App.setRoomField('"+r.id+"','windows',this.value)",'number','1')+
+          this.inp('Coats',r.coats,"App.setRoomField('"+r.id+"','coats',this.value)",'number','2')+
+          '</div>'+
+          '<div style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px">'+
+          '<label class="check-label"><input type="checkbox" '+(r.walls?'checked':'')+' onchange="App.setRoomFieldR(\''+r.id+'\',\'walls\',this.checked)"/> Paint Walls</label>'+
+          '<label class="check-label"><input type="checkbox" '+(r.ceilPaint?'checked':'')+' onchange="App.setRoomFieldR(\''+r.id+'\',\'ceilPaint\',this.checked)"/> Paint Ceiling</label>'+
+          '<label class="check-label" style="color:var(--purple)"><input type="checkbox" '+(r.accentWall?'checked':'')+' onchange="App.setRoomFieldR(\''+r.id+'\',\'accentWall\',this.checked)" style="accent-color:var(--purple)"/> Accent Wall</label>'+
+          '</div>'+
+          (r.accentWall?'<div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:12px;margin-bottom:12px"><div style="font-weight:700;font-size:11px;color:var(--purple);margin-bottom:8px;text-transform:uppercase">Accent Wall</div><div class="grid2">'+this.inp('Width ft',r.accentW,"App.setRoomField('"+r.id+"','accentW',this.value)",'number')+this.inp('Height ft',r.accentH,"App.setRoomField('"+r.id+"','accentH',this.value)",'number',r.ceiling||'8')+'</div></div>':'')+
+          '<div style="background:#f0f7ff;border:1px solid #dbeafe;border-radius:10px;padding:14px;margin-bottom:12px">'+
+          '<div style="font-weight:700;font-size:11px;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🧱 Walls Being Painted</div>'+
+          '<div class="grid3" style="margin-bottom:10px">'+
+          ['2','3','4'].map(n=>'<button class="wall-btn'+(( r.numWalls||'4')===n?' active':'')+'" onclick="App.setRoomFieldR(\''+r.id+'\',\'numWalls\',\''+n+'\')">'+( n==='4'?'All 4':n+' Walls')+'</button>').join('')+
+          '</div>'+
+          '<div style="font-size:11px;color:var(--gray500);margin-bottom:12px">'+({'2':'2 walls — open walls in galley kitchen','3':'3 walls — one side blocked by cabinets','4':'All 4 walls — full room'}[r.numWalls||'4'])+'</div>'+
+          '<div class="grid2">'+
+          this.inp('Cabinet/Counter Deduction (sqft)',r.cabinetDeduct||'',"App.setRoomField('"+r.id+"','cabinetDeduct',this.value)",'number','e.g. 30')+
+          this.inp('Tub/Shower Deduction (sqft)',r.tubDeduct||'',"App.setRoomField('"+r.id+"','tubDeduct',this.value)",'number','e.g. 20')+
+          '</div></div>'+
+          '<div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:14px;margin-bottom:12px">'+
+          '<div style="font-weight:700;font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">📏 Baseboard</div>'+
+          '<div class="grid2" style="align-items:end">'+
+          '<div><label class="label">Linear Feet (LF)</label><input class="input" type="number" inputmode="decimal" value="'+esc(r.baseboardLF||'')+'" placeholder="e.g. 40" oninput="App.setRoomField(\''+r.id+'\',\'baseboardLF\',this.value)" onchange="App.setRoomField(\''+r.id+'\',\'baseboardLF\',this.value)"/><div style="font-size:10px;color:var(--gray400);margin-top:3px" id="bbh'+r.id+'">$'+S.baseboardRate+'/LF = '+fmt((+r.baseboardLF||0)*S.baseboardRate)+'</div></div>'+
+          '<div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid #fde68a" id="bbd'+r.id+'_wrap"><div style="font-size:11px;color:var(--amber);font-weight:600">Baseboard Cost</div><div id="bbd'+r.id+'" style="font-weight:800;font-size:17px;color:var(--amber)">'+fmt((+r.baseboardLF||0)*S.baseboardRate)+'</div></div>'+
+          '</div></div>'+
+          '<div class="result-grid" style="margin-bottom:12px" id="rg'+r.id+'">'+this._roomCells(r,c,cal.tm,cal.cm)+'</div>'+
+          '<button onclick="App.delRoom(\''+r.id+'\')" style="background:none;border:1px solid #fecaca;color:var(--red);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">Remove Room</button>'+
+          '</div>';
+      }
+      h+='</div>';
+    });
+    h+='<div class="card">'+this.ta('Interior Notes',e.notes||'',"App.setEstField('notes',this.value)",'e.g. All walls, ceilings, trim...')+'</div>';
+    h+=this.discBox('Interior Discount',e.intDiscount||'',e.intDiscountLabel||'',e.intDiscountType||'pct',cal.intRaw,cal.intDiscAmt,cal.intNet,'var(--navy)',"App.setEstField('intDiscount',this.value)","App.setEstField('intDiscountLabel',this.value)","App.setEstFieldR('intDiscountType','pct')","App.setEstFieldR('intDiscountType','$')");
+    h+=this.matBox(e.intMaterials||'',"App.setEstField('intMaterials',this.value)",'var(--navy)','#f0f7ff','#dbeafe');
+    return h;
+  },
+
+  renderExterior(e,cal){
+    let h='<div class="info-banner" style="background:#e8f5e9;color:var(--green)">💡 $'+S.extLaborSqft+'/sqft labor + $'+S.extMatSqft+'/sqft materials per coat</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700;font-size:15px">🏡 Sections</div><button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="App.addExt()">+ Add Section</button></div>';
+    if(!(e.ext||[]).length)h+='<div class="empty">No exterior sections yet</div>';
+    (e.ext||[]).forEach(s=>{
+      const c=calcExt(s),open=this.exp['e'+s.id];
+      h+='<div class="accordion"><div class="accordion-hdr" onclick="App.toggle(\'e'+s.id+'\')">'+
+        '<div><div style="font-weight:700;font-size:14px;color:var(--green)">'+esc(s.name)+'</div><div style="font-size:11px;color:var(--gray500);margin-top:2px">'+esc(s.description||'')+(s.twoColor?' · 2-color':'')+(s.sqft?' · '+s.sqft+' sqft':'')+'</div></div>'+
+        '<div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;color:var(--green)">'+fmt(c.subtotal*cal.tm*cal.cm)+'</span><span style="color:var(--gray400)">'+(open?'▲':'▼')+'</span></div></div>';
+      if(open)h+='<div class="accordion-body">'+
+        '<div class="grid-auto" style="margin-bottom:12px">'+
+        this.inp('Section Name',s.name,"App.setExtField('"+s.id+"','name',this.value)")+
+        this.inp('Description',s.description||'',"App.setExtField('"+s.id+"','description',this.value)",'text','e.g. Front siding')+
+        this.inp('Sq Ft',s.sqft||'',"App.setExtField('"+s.id+"','sqft',this.value)",'number','400')+
+        this.inp('Coats',s.coats||'2',"App.setExtField('"+s.id+"','coats',this.value)",'number','2')+
+        '</div>'+
+        '<label class="check-label" style="color:var(--green);margin-bottom:12px"><input type="checkbox" '+(s.twoColor?'checked':'')+' onchange="App.setExtField(\''+s.id+'\',\'twoColor\',this.checked);App.render()" style="accent-color:var(--green)"/> 2nd Color (+$'+S.extSecondColor+'/sqft)</label>'+
+        '<div class="result-grid" style="border-left-color:var(--green);background:#f0fdf4;margin-bottom:10px">'+
+        '<div><div class="rc-label">Sqft</div><div class="rc-value">'+c.sqft+'</div></div>'+
+        '<div><div class="rc-label">Labor</div><div class="rc-value">'+fmt(c.labor)+'</div></div>'+
+        '<div><div class="rc-label">Materials</div><div class="rc-value">'+fmt(c.mat)+'</div></div>'+
+        '<div><div class="rc-label">Total</div><div class="rc-value big" style="color:var(--green)">'+fmt(c.subtotal*cal.cm)+'</div></div>'+
+        '</div>'+
+        '<button onclick="App.delExt(\''+s.id+'\')" style="background:none;border:1px solid #fecaca;color:var(--red);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">Remove</button>'+
+        '</div>';
+      h+='</div>';
+    });
+    h+='<div class="card">'+this.ta('Exterior Notes',e.extNotes||'',"App.setEstField('extNotes',this.value)",'e.g. Power wash included.')+'</div>';
+    h+=this.discBox('Exterior Discount',e.extDiscount||'',e.extDiscountLabel||'',e.extDiscountType||'pct',cal.extRaw,cal.extDiscAmt,cal.extNet,'var(--green)',"App.setEstField('extDiscount',this.value)","App.setEstField('extDiscountLabel',this.value)","App.setEstFieldR('extDiscountType','pct')","App.setEstFieldR('extDiscountType','$')");
+    h+=this.matBox(e.extMaterials||'',"App.setEstField('extMaterials',this.value)",'var(--green)','#f0fdf4','#86efac');
+    return h;
+  },
+
+  renderOneOff(e,cal){
+    let h='<div class="info-banner" style="background:#fce4ec;color:var(--pink)">💡 Half Day: $'+S.halfDay+' | Full Day: $'+S.fullDay+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:700;font-size:15px">🔧 One-Off Jobs</div><button class="btn btn-sm" style="background:var(--pink);color:#fff" onclick="App.addJob()">+ Add Job</button></div>';
+    if(!(e.jobs||[]).length)h+='<div class="empty">No one-off jobs yet</div>';
+    (e.jobs||[]).forEach(j=>{
+      const c=calcJob(j),open=this.exp['j'+j.id];
+      h+='<div class="accordion"><div class="accordion-hdr" onclick="App.toggle(\'j'+j.id+'\')">'+
+        '<div><div style="font-weight:700;font-size:14px;color:var(--pink)">'+esc(j.description||'Unnamed Job')+'</div><div style="font-size:11px;color:var(--gray500);margin-top:2px">'+j.dayType+(j.days&&j.days!=='1'?' · '+j.days+' days':'')+'</div></div>'+
+        '<div style="display:flex;align-items:center;gap:10px"><span style="font-weight:700;color:var(--pink)">'+fmt(c.subtotal*cal.tm)+'</span><span style="color:var(--gray400)">'+(open?'▲':'▼')+'</span></div></div>';
+      if(open)h+='<div class="accordion-body">'+
+        '<div class="grid-auto" style="margin-bottom:12px">'+
+        this.inp('Description',j.description||'',"App.setJobField('"+j.id+"','description',this.value)",'text','e.g. Ceiling patch')+
+        this.sel('Day Type',j.dayType,['Half Day (1–4 hrs)','Full Day (4–8 hrs)','Custom'],"App.setJobField('"+j.id+"','dayType',this.value);App.render()")+
+        (j.dayType==='Custom'?this.inp('Custom Rate ($)',j.customRate||'',"App.setJobField('"+j.id+"','customRate',this.value)",'number','400'):'')+
+        this.inp('Days',j.days||'1',"App.setJobField('"+j.id+"','days',this.value)",'number','1')+
+        this.inp('Materials ($)',j.materials||'',"App.setJobField('"+j.id+"','materials',this.value)",'number','0')+
+        this.inp('Mat Markup %',j.matMarkup||'20',"App.setJobField('"+j.id+"','matMarkup',this.value)",'number','20')+
+        '</div>'+
+        this.inp('Notes',j.notes||'',"App.setJobField('"+j.id+"','notes',this.value)",'text','e.g. Stain blocker required')+
+        '<div class="result-grid" style="border-left-color:var(--pink);background:#fdf2f8;margin:12px 0">'+
+        '<div><div class="rc-label">Rate/Day</div><div class="rc-value">'+fmt(c.rate)+'</div></div>'+
+        '<div><div class="rc-label">Days</div><div class="rc-value">'+c.days+'</div></div>'+
+        '<div><div class="rc-label">Labor</div><div class="rc-value">'+fmt(c.labor)+'</div></div>'+
+        '<div><div class="rc-label">Materials</div><div class="rc-value">'+fmt(c.mat)+'</div></div>'+
+        '<div><div class="rc-label">Total</div><div class="rc-value big" style="color:var(--pink)">'+fmt(c.subtotal*cal.tm)+'</div></div>'+
+        '</div>'+
+        '<button onclick="App.delJob(\''+j.id+'\')" style="background:none;border:1px solid #fecaca;color:var(--red);border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer">Remove</button>'+
+        '</div>';
+      h+='</div>';
+    });
+    h+='<div class="card">'+this.ta('One-Off Notes',e.jobNotes||'',"App.setEstField('jobNotes',this.value)",'e.g. Hidden damage billed separately.')+'</div>';
+    h+=this.discBox('One-Off Discount',e.jobDiscount||'',e.jobDiscountLabel||'',e.jobDiscountType||'pct',cal.jobRaw,cal.jobDiscAmt,cal.jobNet,'var(--pink)',"App.setEstField('jobDiscount',this.value)","App.setEstField('jobDiscountLabel',this.value)","App.setEstFieldR('jobDiscountType','pct')","App.setEstFieldR('jobDiscountType','$')");
+    h+=this.matBox(e.jobMaterials||'',"App.setEstField('jobMaterials',this.value)",'var(--pink)','#fdf2f8','#fbcfe8');
+    return h;
+  },
+
+  renderCabinets(e,cal){
+    const cab=e.cab||{},cc=cal.cc;
+    let h='<div class="info-banner" style="background:#fffbeb;border:1px solid #fcd34d;color:var(--amber)">🪚 Priced per door/drawer × coats</div>'+
+      '<div class="card">'+
+      '<div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">Application Method</div>'+
+      '<div style="display:flex;border-radius:10px;overflow:hidden;border:2px solid var(--navy);margin-bottom:16px">'+
+      '<button class="method-btn" onclick="App.setCabFieldR(\'method\',\'brush\')" style="background:'+(cab.method!=='spray'?'var(--navy)':'#f8fafc')+';color:'+(cab.method!=='spray'?'#fff':'var(--gray500)')+'">🖌️ Brush / Roll<div style="font-size:11px;font-weight:400;margin-top:2px">$'+S.cabDoorBrush+'/door</div></button>'+
+      '<button class="method-btn" onclick="App.setCabFieldR(\'method\',\'spray\')" style="background:'+(cab.method==='spray'?'var(--navy)':'#f8fafc')+';color:'+(cab.method==='spray'?'#fff':'var(--gray500)')+'">💨 Spray<div style="font-size:11px;font-weight:400;margin-top:2px">$'+S.cabDoorSpray+'/door + $'+S.cabSpraySetup+' setup</div></button>'+
+      '</div>'+
+      '<div class="grid-auto" style="margin-bottom:12px">'+
+      this.inp('Upper Doors',cab.upperDoors||'',"App.setCabField('upperDoors',this.value)",'number','0')+
+      this.inp('Lower Doors',cab.lowerDoors||'',"App.setCabField('lowerDoors',this.value)",'number','0')+
+      this.inp('Drawer Fronts',cab.drawerFronts||'',"App.setCabField('drawerFronts',this.value)",'number','0')+
+      this.inp('Cabinet Boxes',cab.boxes||'',"App.setCabField('boxes',this.value)",'number','0')+
+      this.inp('Coats',cab.coats||'2',"App.setCabField('coats',this.value)",'number','2')+
+      '</div>'+
+      '<label class="check-label" style="color:var(--amber)"><input type="checkbox" '+(cab.includePrep!==false?'checked':'')+' onchange="App.setCabFieldR(\'includePrep\',this.checked)" style="accent-color:var(--amber)"/> Include Prep & Sand ($'+S.cabPrep+'/piece)</label>'+
+      '</div>';
+    if(cc.totalPieces>0){
+      h+='<div class="card">'+
+        '<div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Labor Breakdown</div>'+
+        cc.breakdown.map(b=>'<div class="total-row"><span style="color:var(--gray500)">'+b.l+'</span><span style="font-weight:600">'+fmt(b.v)+'</span></div>').join('')+
+        '<div class="total-row"><span style="color:var(--gray500)">Materials</span><span style="font-weight:600">'+fmt(cc.mat)+'</span></div>'+
+        '<div style="background:#fffbeb;border-radius:8px;padding:10px 14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center;border:1px solid #fcd34d">'+
+        '<div style="font-size:13px;color:var(--amber)"><b>'+cc.totalPieces+' pieces</b> · '+(cab.method==='spray'?'Spray':'Brush/roll')+'</div>'+
+        '<div style="font-weight:800;font-size:18px;color:var(--amber)">'+fmt(cc.subtotal*cal.tm)+'</div></div></div>';
+      h+=this.discBox('Cabinet Discount',cab.discount||'',cab.discountLabel||'',cab.discountType||'pct',cal.cabRaw,cal.cabDiscAmt,cal.cabNet,'var(--amber)',"App.setCabField('discount',this.value)","App.setCabField('discountLabel',this.value)","App.setCabFieldR('discountType','pct')","App.setCabFieldR('discountType','$')");
+    }
+    h+='<div class="card">'+this.ta('Cabinet Notes',cab.notes||'',"App.setCabField('notes',this.value)",'e.g. Remove all doors. Spray in garage.')+'</div>';
+    h+=this.matBox(e.cabMaterials||'',"App.setEstField('cabMaterials',this.value)",'var(--amber)','#fffbeb','#fcd34d');
+    return h;
+  },
+
+  renderSummary(e,cal){
+    return'<div style="background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:14px;padding:18px 20px;margin-bottom:14px" id="summary-quote">'+this._summaryQuoteHTML(cal)+'</div>'+
+      '<div class="card" style="border-left:4px solid #16a34a">'+
+      '<div style="font-weight:700;font-size:11px;color:#16a34a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">💵 Cash Price</div>'+
+      '<div class="grid2">'+
+      this.inp('Cash Discount ($)',e.cashDiscount||'',"App.setEstField('cashDiscount',this.value)",'number','100','Amount off for cash payment')+
+      (cal.cashAmt>0?'<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:10px 12px"><div style="font-size:11px;color:var(--gray500)">Regular</div><div style="text-decoration:line-through;font-size:12px;color:var(--gray500)">'+fmt(cal.finalQuote)+'</div><div style="font-weight:800;font-size:20px;color:#16a34a">'+fmt(cal.cashPrice)+'</div></div>':'<div style="background:var(--gray50);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--gray400)">Enter cash discount amount</div>')+
+      '</div></div>'+
+      '<div class="card"><div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Quote Tier</div>'+
+      '<div class="grid3" id="tier-display">'+this._tierHTML(cal)+'</div></div>'+
+      '<div class="card"><div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">🏷️ Global Discount</div>'+
+      '<div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:end;margin-bottom:10px">'+
+      '<div><label class="label">Type</label>'+this.dtypeBtns(e.discountType||'pct','var(--navy)',"App.setEstFieldR('discountType','pct')","App.setEstFieldR('discountType','$')")+'</div>'+
+      this.inp((e.discountType||'pct')==='pct'?'Discount %':'Discount $',e.discount||'',"App.setEstField('discount',this.value)",'number',(e.discountType||'pct')==='pct'?'17.76':'100')+
+      this.inp('Promo Label',e.discountLabel||'',"App.setEstField('discountLabel',this.value)",'text','e.g. 4th of July')+
+      '</div>'+
+      (cal.globalDisc>0?'<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;color:var(--navy);font-weight:700">'+esc(e.discountLabel||'Discount')+'</div><div style="font-size:12px;color:var(--gray500)">Saving '+fmt(cal.globalDisc)+'</div></div><div style="font-weight:800;font-size:18px;color:var(--navy)">'+fmt(cal.finalQuote)+'</div></div>':'')+
+      '</div>'+
+      '<div class="card"><div style="font-weight:700;font-size:11px;color:var(--gray500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px">📋 Scope Options</div>'+
+      '<div class="grid2">'+this.inp('Paint Brand',e.paintBrand||'',"App.setEstField('paintBrand',this.value)",'text','e.g. Benjamin Moore')+this.inp('Est. Duration',e.estDuration||'',"App.setEstField('estDuration',this.value)",'text','e.g. 2–3 weekends')+'</div></div>'+
+      '<button class="btn btn-primary btn-full" onclick="App.preview()">👁 Preview & Share →</button>';
+  },
+
+  renderSettings(){
+    const sf=(f,l)=>'<div>'+this.inp(l,S[f],"App.setSetting('"+f+"',this.value)",'number')+'</div>';
+    return'<div class="card"><div style="font-weight:700;font-size:14px;margin-bottom:14px">Pricing Settings</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--navy);text-transform:uppercase;margin-bottom:8px">Interior</div>'+
+      '<div class="grid2" style="margin-bottom:14px">'+sf('laborRate','Labor Rate ($/hr)')+sf('matRate','Material ($/sqft)')+sf('doorDeduct','Door Deduction (sqft)')+sf('windowDeduct','Window Deduction (sqft)')+sf('baseboardRate','Baseboard Rate ($/LF)')+sf('contingency','Contingency (%)')+sf('econMult','Economy Multiplier')+sf('premMult','Premium Multiplier')+'</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--green);text-transform:uppercase;margin-bottom:8px">Exterior</div>'+
+      '<div class="grid2" style="margin-bottom:14px">'+sf('extLaborSqft','Labor ($/sqft/coat)')+sf('extMatSqft','Material ($/sqft/coat)')+sf('extSecondColor','2nd Color ($/sqft)')+'</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--pink);text-transform:uppercase;margin-bottom:8px">One-Off</div>'+
+      '<div class="grid2" style="margin-bottom:14px">'+sf('halfDay','Half Day ($)')+sf('fullDay','Full Day ($)')+'</div>'+
+      '<div style="font-weight:700;font-size:11px;color:var(--amber);text-transform:uppercase;margin-bottom:8px">Cabinets</div>'+
+      '<div class="grid2">'+sf('cabDoorBrush','Door Brush ($)')+sf('cabDoorSpray','Door Spray ($)')+sf('cabDrawerBrush','Drawer Brush ($)')+sf('cabDrawerSpray','Drawer Spray ($)')+sf('cabBoxBrush','Box Brush ($)')+sf('cabBoxSpray','Box Spray ($)')+sf('cabPrep','Prep Per Piece ($)')+sf('cabSpraySetup','Spray Setup ($)')+'</div></div>';
+  },
+
+  renderPreview(){
+    document.getElementById('tabbar').innerHTML='';
+    const e=this.est,cal=getCalcs(e),en=e.id.replace('est-','JJP-');
+    const scopeSecs=(e.rooms||[]).filter(r=>r.name).map(r=>
+      '<div style="margin-bottom:18px">'+
+      '<div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">'+esc(r.name)+'</div>'+
+      '<div style="padding-left:4px">'+
+      (r.walls?'<div style="font-size:13px;color:#374151;padding:3px 0;line-height:1.6">• Prep, prime, and paint walls — '+r.coats+' coat'+(+r.coats>1?'s':'')+'</div>':'')+
+      (r.ceilPaint?'<div style="font-size:13px;color:#374151;padding:3px 0">• Paint ceiling</div>':'')+
+      (r.accentWall?'<div style="font-size:13px;color:#374151;padding:3px 0">• Accent wall</div>':'')+
+      (+r.baseboardLF>0?'<div style="font-size:13px;color:#374151;padding:3px 0">• Paint baseboards — '+r.baseboardLF+' linear feet</div>':'')+
+      '<div style="font-size:13px;color:#374151;padding:3px 0">• Clean, sand, prep, and caulk surfaces as necessary</div>'+
+      '<div style="font-size:13px;color:#374151;padding:3px 0">• Spot prime where needed for proper adhesion</div>'+
+      (e.paintBrand?'<div style="font-size:13px;color:#374151;padding:3px 0">• Apply premium finish using '+esc(e.paintBrand)+' paints</div>':'')+
+      '<div style="font-size:13px;color:#374151;padding:3px 0">• Protect flooring and adjacent surfaces</div>'+
+      '</div></div>').join('')+
+    (e.ext||[]).filter(s=>s.name).map(s=>
+      '<div style="margin-bottom:18px">'+
+      '<div style="background:#1a3a5c;color:#fff;font-weight:700;font-size:14px;padding:8px 14px;border-radius:6px;margin-bottom:8px">'+esc(s.name)+(s.description?' — '+esc(s.description):'')+'</div>'+
+      '<div style="padding-left:4px">'+
+      '<div style="font-size:13px;color:#374151;padding:3px 0">• Prep and paint exterior surface — '+s.coats+' coat'+(+s.coats>1?'s':'')+'</div>'+
+      (s.twoColor?'<div style="font-size:13px;color:#374151;padding:3px 0">• Two-color application</div>':'')+
+      '<div style="font-size:13px;color:#374151;padding:3px 0">• Caulking and spot priming where necessary</div>'+
+      (e.paintBrand?'<div style="font-size:13px;color:#374151;padding:3px 0">• Premium '+esc(e.paintBrand)+' exterior coating</div>':'')+
+      '</div></div>').join('');
+
+    let h='<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
+      '<button class="btn btn-sm" style="background:rgba(0,0,0,.06);color:var(--navy)" onclick="App.screen=\'editor\';App.render()">← Edit</button>'+
+      '<button class="btn btn-sm" style="background:'+(this.prevMode==='scope'?'var(--navy)':'#f1f5f9')+';color:'+(this.prevMode==='scope'?'#fff':'var(--gray500)')+'" onclick="App.prevMode=\'scope\';App.render()">📋 Scope</button>'+
+      '<button class="btn btn-sm" style="background:'+(this.prevMode==='detail'?'var(--navy)':'#f1f5f9')+';color:'+(this.prevMode==='detail'?'#fff':'var(--gray500)')+'" onclick="App.prevMode=\'detail\';App.render()">📊 Detail</button>'+
+      '</div>';
+
+    if(this.prevMode==='scope'){
+      h+='<div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:14px">'+
+        '<div style="background:linear-gradient(135deg,#1a3a5c,#2563a8);padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:40px;background:#f59e0b;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px">🎨</div><div><div style="color:#fff;font-weight:800;font-size:18px">JoeJo\'s Painting</div><div style="color:#93c5fd;font-size:12px">joejospaintinginc@gmail.com</div><div style="color:#93c5fd;font-size:12px;font-style:italic">"Quality you can count on."</div></div></div>'+
+        '<div style="text-align:right"><div style="color:#f59e0b;font-weight:800;font-size:22px">ESTIMATE</div><div style="color:#bfdbfe;font-size:12px">#'+en+'</div><div style="color:#bfdbfe;font-size:12px">'+e.createdAt+'</div></div></div>'+
+        '<div style="padding:20px 24px">'+
+        '<div style="margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid #f1f5f9">'+
+        '<div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:5px">Customer Information</div>'+
+        '<div style="font-weight:700;font-size:15px">'+esc(e.customerName||'—')+'</div>'+
+        '<div style="color:#475569;font-size:13px;margin-top:2px">'+esc(e.jobAddress||'')+'</div>'+
+        (e.customerPhone?'<div style="color:#475569;font-size:13px">'+esc(e.customerPhone)+'</div>':'')+
+        (e.customerEmail?'<div style="color:#2563a8;font-size:13px">'+esc(e.customerEmail)+'</div>':'')+
+        '</div>'+
+        (scopeSecs?'<div style="font-size:10px;font-weight:700;color:#1a3a5c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">📋 Scope of Work</div>'+scopeSecs+'<div style="border-top:2px solid #e2e8f0;margin:18px 0"></div>':'')+
+        '<div style="text-align:center;padding:18px;background:#f8fafc;border-radius:12px;margin-bottom:14px">'+
+        '<div style="font-size:12px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Total Investment</div>'+
+        '<div style="font-weight:800;font-size:36px;color:#1a3a5c;line-height:1">'+fmt(cal.finalQuote)+'</div>'+
+        '<div style="font-size:12px;color:#94a3b8;margin-top:5px">50% deposit ('+fmt(cal.finalQuote/2)+') required to schedule</div>'+
+        '<div style="border-top:1px dashed #e2e8f0;margin:12px 0 10px"></div>'+
+        '<div style="font-size:12px;color:#64748b;margin-bottom:4px">Optional Cash Price</div>'+
+        '<div style="font-weight:800;font-size:28px;color:#16a34a">'+fmt(cal.finalQuote-(cal.cashAmt||100))+'</div>'+
+        '<div style="font-size:12px;color:#16a34a;margin-top:3px">Save '+fmt(cal.cashAmt||100)+' when paying cash</div>'+
+        '</div>'+
+        (e.notes?'<div style="background:#f0f7ff;border-left:4px solid #2563a8;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:14px"><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px">Notes</div><div style="font-size:13px;color:#475569">'+esc(e.notes)+'</div></div>':'')+
+        '<div style="display:flex;justify-content:space-between;margin-top:18px;padding-top:14px;border-top:1px solid #f1f5f9">'+
+        '<div><div style="border-bottom:1px solid #cbd5e1;width:140px;margin-bottom:5px"></div><div style="font-size:10px;color:#94a3b8">Customer Signature</div></div>'+
+        '<div style="text-align:right"><div style="border-bottom:1px solid #cbd5e1;width:100px;margin-bottom:5px"></div><div style="font-size:10px;color:#94a3b8">Date</div></div>'+
+        '</div>'+
+        '<div style="text-align:center;margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9"><div style="font-weight:700;font-size:13px;color:#1a3a5c">JoeJo\'s Painting</div><div style="font-size:11px;color:#64748b">joejospaintinginc@gmail.com 🎨</div></div>'+
+        '</div></div>';
+    } else {
+      h+='<div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.1);margin-bottom:14px">'+
+        '<div style="background:linear-gradient(135deg,#1a3a5c,#2563a8);padding:22px 26px;display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div style="display:flex;align-items:center;gap:10px"><div style="width:40px;height:40px;background:#f59e0b;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px">🎨</div><div><div style="color:#fff;font-weight:800;font-size:18px">JoeJo\'s Painting</div><div style="color:#93c5fd;font-size:12px">joejospaintinginc@gmail.com</div></div></div>'+
+        '<div style="text-align:right"><div style="color:#f59e0b;font-weight:800;font-size:22px">ESTIMATE</div><div style="color:#bfdbfe;font-size:12px">#'+en+'</div><div style="color:#bfdbfe;font-size:12px">'+e.createdAt+'</div></div></div>'+
+        '<div style="padding:20px 24px">'+
+        '<div class="grid2" style="margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #f1f5f9">'+
+        '<div><div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px">Bill To</div><div style="font-weight:700;font-size:14px">'+esc(e.customerName||'—')+'</div><div style="color:#475569;font-size:12px">'+esc(e.jobAddress||'')+'</div></div>'+
+        '<div style="text-align:right"><div style="font-size:12px;color:#475569">Tier: <b>'+e.selectedTier+'</b></div><div style="font-size:12px;color:#475569">Valid: 30 days</div></div></div>'+
+        (cal.rc.length>0?'<div style="font-size:10px;font-weight:700;color:#1a3a5c;text-transform:uppercase;margin-bottom:8px">🏠 Interior</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px"><thead><tr style="background:#f8fafc">'+
+        ['Room','Sqft','Labor','Mat','Total'].map((h,i)=>'<th style="padding:7px 8px;text-align:'+(i===0?'left':'right')+';font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0">'+h+'</th>').join('')+
+        '</tr></thead><tbody>'+
+        cal.rc.map(({r,c},i)=>'<tr style="border-bottom:1px solid #f1f5f9;background:'+(i%2===0?'#fff':'#fafafa')+'">'+
+          '<td style="padding:8px"><div style="font-weight:600">'+esc(r.name)+'</div><div style="font-size:10px;color:#94a3b8">'+(r.numWalls||4)+' walls · '+r.coats+' coats'+(r.ceilPaint?' · Ceil':'')+'</div></td>'+
+          '<td style="padding:8px;text-align:right;color:#475569">'+c.sqft+'</td>'+
+          '<td style="padding:8px;text-align:right;color:#475569">'+fmt(c.labor)+'</td>'+
+          '<td style="padding:8px;text-align:right;color:#475569">'+fmt(c.mat)+'</td>'+
+          '<td style="padding:8px;text-align:right;font-weight:700;color:#1a3a5c">'+fmt(c.subtotal*cal.tm*cal.cm)+'</td></tr>').join('')+
+        '</tbody></table>':'')+'<div style="display:flex;justify-content:flex-end"><div style="width:250px">'+
+        (cal.intRaw>0?'<div class="total-row"><span style="color:#475569">Interior</span><span>'+fmt(cal.intNet*cal.cm)+'</span></div>':'')+
+        (cal.extRaw>0?'<div class="total-row"><span style="color:#475569">Exterior</span><span>'+fmt(cal.extNet*cal.cm)+'</span></div>':'')+
+        (cal.jobRaw>0?'<div class="total-row"><span style="color:#475569">One-Off</span><span>'+fmt(cal.jobNet)+'</span></div>':'')+
+        (cal.cabRaw>0?'<div class="total-row"><span style="color:#475569">Cabinets</span><span>'+fmt(cal.cabNet)+'</span></div>':'')+
+        (cal.globalDisc>0?'<div class="total-row"><span style="color:var(--red)">'+esc(e.discountLabel||'Discount')+'</span><span style="color:var(--red);font-weight:700">-'+fmt(cal.globalDisc)+'</span></div>':'')+
+        '<div style="background:#1a3a5c;border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;justify-content:space-between;align-items:center"><span style="color:#fff;font-weight:700;font-size:13px">TOTAL DUE</span><span style="color:#f59e0b;font-weight:800;font-size:18px">'+fmt(cal.finalQuote)+'</span></div>'+
+        '<div style="font-size:11px;color:#94a3b8;text-align:right;margin-top:4px">50% deposit: '+fmt(cal.finalQuote/2)+'</div>'+
+        (cal.cashAmt>0?'<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px 12px;margin-top:10px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:700;color:#16a34a">💵 Cash Price</div><div style="font-size:11px;color:#64748b">Save '+fmt(cal.cashAmt)+'</div></div><div style="font-weight:800;font-size:18px;color:#16a34a">'+fmt(cal.cashPrice)+'</div></div>':'')+
+        '</div></div></div></div>';
+    }
+    h+='<div class="share-grid">'+
+      '<button class="btn btn-full" style="background:#22c55e;color:#fff" onclick="App.sms()">💬 Text</button>'+
+      '<button class="btn btn-full" style="background:#ea4335;color:#fff" onclick="App.gmail()">📧 Gmail</button>'+
+      '<button class="btn btn-gold btn-full" onclick="App.copy()">📋 Copy</button>'+
+      '<button class="btn btn-full" style="background:#475569;color:#fff" onclick="App.download()">⬇️ Download</button>'+
+      '</div>';
+    document.getElementById('content').innerHTML=h;
+  },
+};
+
+App.init();
+</script>
+</body>
+</html>
